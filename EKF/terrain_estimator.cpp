@@ -137,7 +137,7 @@ void Ekf::fuseHagl()
 		float gate_size = fmaxf(_params.range_innov_gate, 1.0f);
 		_terr_test_ratio = sq(_hagl_innov) / (sq(gate_size) * _hagl_innov_var);
 
-		if (_terr_test_ratio <= 1.0f) {
+		if (_terr_test_ratio <= 1.0f && sq(_last_meas_hagl-meas_hagl) < 9*obs_variance) { // Three-sigma deviations are still accepted
 			// calculate the Kalman gain
 			float gain = _terrain_var / _hagl_innov_var;
 			// correct the state
@@ -149,13 +149,14 @@ void Ekf::fuseHagl()
 			_innov_check_fail_status.flags.reject_hagl = false;
 		} else {
 			// If we have been rejecting range data for too long, reset to measurement
-			if (_time_last_imu - _time_last_hagl_fuse > (uint64_t)10E6) {
+			if (_time_last_imu - _time_last_hagl_fuse > (uint64_t)5E6) {
 				_terrain_vpos = _state.pos(2) + meas_hagl;
 				_terrain_var = obs_variance;
 			} else {
 				_innov_check_fail_status.flags.reject_hagl = true;
 			}
 		}
+		_last_meas_hagl = meas_hagl;
 	} else {
 		_innov_check_fail_status.flags.reject_hagl = true;
 		return;
