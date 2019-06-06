@@ -31,9 +31,9 @@
 #
 ############################################################################
 
-add_library(ecl_tecs
-	tecs.cpp
+add_library(ecl_nl_tecs
+	nl_tecs.cpp
 	)
-add_dependencies(ecl_tecs prebuild_targets)
-target_compile_definitions(ecl_tecs PRIVATE -DMODULE_NAME="ecl/tecs")
-target_include_directories(ecl_tecs PUBLIC ${ECL_SOURCE_DIR})
+add_dependencies(ecl_nl_tecs prebuild_targets)
+target_compile_definitions(ecl_nl_tecs PRIVATE -DMODULE_NAME="ecl/nl_tecs")
+target_include_directories(ecl_nl_tecs PUBLIC ${ECL_SOURCE_DIR})

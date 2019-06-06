@@ -42,17 +42,17 @@
 #include <mathlib/mathlib.h>
 #include <matrix/math.hpp>
 
-class TECS
+class NLTECS
 {
 public:
-	TECS() = default;
-	~TECS() = default;
+	NLTECS() = default;
+	~NLTECS() = default;
 
 	// no copy, assignment, move, move assignment
-	TECS(const TECS &) = delete;
-	TECS &operator=(const TECS &) = delete;
-	TECS(TECS &&) = delete;
-	TECS &operator=(TECS &&) = delete;
+	NLTECS(const TECS &) = delete;
+	NLTECS &operator=(const TECS &) = delete;
+	NLTECS(TECS &&) = delete;
+	NLTECS &operator=(TECS &&) = delete;
 
 	/**
 	 * Get the current airspeed status
@@ -145,13 +145,13 @@ public:
 	float speed_derivative() { return _speed_derivative; }
 
 	float STE_error() { return _STE_error; }
-	float STE_rate_error() { return _STE_rate_error; }
+	//float STE_rate_error() { return _STE_rate_error; }
 
 	float SEB_error() { return _SEB_error; }
 	float SEB_rate_error() { return _SEB_rate_error; }
 
-	float throttle_integ_state() { return _throttle_integ_state; }
-	float pitch_integ_state() { return _pitch_integ_state; }
+	// float throttle_integ_state() { return _throttle_integ_state; }
+	// float pitch_integ_state() { return _pitch_integ_state; }
 
 	/**
 	 * Handle the altitude reset
@@ -215,8 +215,8 @@ private:
 	float _tas_state{0.0f};						///< complimentary filter state - true airspeed (m/sec)
 
 	// controller states
-	float _throttle_integ_state{0.0f};				///< throttle integrator state
-	float _pitch_integ_state{0.0f};					///< pitch integrator state (rad)
+	// float _throttle_integ_state{0.0f};				///< throttle integrator state
+	// float _pitch_integ_state{0.0f};					///< pitch integrator state (rad)
 	float _last_throttle_setpoint{0.0f};				///< throttle demand rate limiter state (1/sec)
 	float _last_pitch_setpoint{0.0f};				///< pitch demand rate limiter state (rad/sec)
 	float _speed_derivative{0.0f};					///< rate of change of speed along X axis (m/sec**2)
@@ -260,7 +260,7 @@ private:
 
 	// specific energy error quantities
 	float _STE_error{0.0f};						///< specific total energy error (m**2/sec**2)
-	float _STE_rate_error{0.0f};					///< specific total energy rate error (m**2/sec**3)
+	//float _STE_rate_error{0.0f};					///< specific total energy rate error (m**2/sec**3)
 	float _SEB_error{0.0f};						///< specific energy balance error (m**2/sec**2)
 	float _SEB_rate_error{0.0f};					///< specific energy balance rate error (m**2/sec**3)
 
