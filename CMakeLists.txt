@@ -163,6 +163,7 @@ add_subdirectory(geo)
 add_subdirectory(geo_lookup)
 add_subdirectory(l1)
 add_subdirectory(tecs)
+add_subdirectory(nl_tecs)
 add_subdirectory(validation)
 
 #=============================================================================
