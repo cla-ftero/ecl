@@ -399,7 +399,7 @@ void NLTECS::_update_pitch_setpoint()
 	float theta_clmb = 1;
 	float gamma_sink = 1;
 	float theta_sink = 1;
-	if _flightpath_setpoint_unc > 0 {
+    if (_flightpath_setpoint_unc > 0) {
 		_pitch_setpoint_unc = theta_cruise + _flightpath_setpoint_unc/gamma_clmb *(theta_clmb-theta_cruise);
 	} else {
 		_pitch_setpoint_unc = theta_cruise + _flightpath_setpoint_unc/gamma_sink *(theta_sink-theta_cruise);

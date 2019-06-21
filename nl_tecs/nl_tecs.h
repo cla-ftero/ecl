@@ -49,10 +49,10 @@ public:
 	~NLTECS() = default;
 
 	// no copy, assignment, move, move assignment
-	NLTECS(const TECS &) = delete;
-	NLTECS &operator=(const TECS &) = delete;
-	NLTECS(TECS &&) = delete;
-	NLTECS &operator=(TECS &&) = delete;
+    NLTECS(const NLTECS &) = delete;
+    NLTECS &operator=(const NLTECS &) = delete;
+    NLTECS(NLTECS &&) = delete;
+    NLTECS &operator=(NLTECS &&) = delete;
 
 	/**
 	 * Get the current airspeed status
