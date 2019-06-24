@@ -318,13 +318,13 @@ void NLTECS::_update_throttle_setpoint(const float throttle_cruise, const matrix
 		// Adjust the demanded total energy rate to compensate for induced drag rise in turns.
 		// Assume induced drag scales linearly with normal load factor.
 		// The additional normal load factor is given by (1/cos(bank angle) - 1)
-		float cosPhi = sqrtf((rotMat(0, 1) * rotMat(0, 1)) + (rotMat(1, 1) * rotMat(1, 1)));
-		STE_rate_setpoint = STE_rate_setpoint + _load_factor_correction * (1.0f / constrain(cosPhi, 0.1f, 1.0f) - 1.0f);
+		if( _enable_side_correction > 0.5f){
+			float cosPhi = sqrtf((rotMat(0, 1) * rotMat(0, 1)) + (rotMat(1, 1) * rotMat(1, 1)));
+			STE_rate_setpoint = STE_rate_setpoint + _load_factor_correction * (1.0f / constrain(cosPhi, 0.1f, 1.0f) - 1.0f);
+		}
 
-		// Add proportional and derivative control feedback to the predicted throttle and constrain to throttle limits
-		float kt = 1;
-		float mass = 1;
-		_throttle_setpoint = throttle_cruise + (kt * _STE_error  + STE_rate_setpoint) * mass / _tas_state;
+        // Add proportional and derivative control feedback to the predicted throttle and constrain to throttle limits
+        _throttle_setpoint = throttle_cruise + (_nl_kt * _STE_error  + STE_rate_setpoint) * _aircraft_mass / _tas_state;
 		_throttle_setpoint = constrain(_throttle_setpoint, _throttle_setpoint_min, _throttle_setpoint_max);
 
 		// Rate limit the throttle demand
@@ -383,27 +383,25 @@ void NLTECS::_detect_uncommanded_descent()
 
 void NLTECS::_update_pitch_setpoint()
 {
-	// Calculate the specific energy balance and balance rate error
-	float kt = 1;
-	float k1asdf = 1 * kt;
-	float k2asdf = kt + 1 * kt;
+    // Calculate the specific energy balance and balance rate error
+    float k1asdf = _nl_k1 * _nl_kt;
+    float k2asdf = _nl_kt + _nl_k2 * _nl_kt;
 	_SEB_error = (_SPE_setpoint - _SPE_estimate) * k2asdf - (_SKE_setpoint + _SKE_estimate) * k1asdf;
 
 	// Calculate a specific energy correction that doesn't include the integrator contribution
 	float SEB_correction = _SEB_error + _hgt_rate_setpoint / _tas_state;
 	float _flightpath_setpoint_unc = asinf(SEB_correction);
 
-	// Convert flight path command to pitch using a bilinear fit
-	float theta_cruise = 1;
-	float gamma_clmb = 1;
-	float theta_clmb = 1;
-	float gamma_sink = 1;
-	float theta_sink = 1;
-    if (_flightpath_setpoint_unc > 0) {
-		_pitch_setpoint_unc = theta_cruise + _flightpath_setpoint_unc/gamma_clmb *(theta_clmb-theta_cruise);
-	} else {
-		_pitch_setpoint_unc = theta_cruise + _flightpath_setpoint_unc/gamma_sink *(theta_sink-theta_cruise);
-	}
+    // Convert flight path command to pitch using a bilinear fit
+    if ( _enable_bilinear > 0.5f){
+        if (_flightpath_setpoint_unc > 0) {
+            _pitch_setpoint_unc = _theta_c + _flightpath_setpoint_unc/_gamma_clmb *(_theta_clmb-_theta_c);
+        } else {
+            _pitch_setpoint_unc = _theta_c + _flightpath_setpoint_unc/_gamma_snk *(_theta_snk-_theta_c);
+        }
+    } else {
+        _pitch_setpoint_unc = _flightpath_setpoint_unc;
+    }
 
 	// limit the pitch setpoint
 	_pitch_setpoint = constrain(_pitch_setpoint_unc, _pitch_setpoint_min, _pitch_setpoint_max);

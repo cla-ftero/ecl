@@ -128,6 +128,20 @@ public:
 
 	void set_roll_throttle_compensation(float compensation) { _load_factor_correction = compensation; }
 
+
+    void set_enable_side_correction(float enable_side_correction) { _enable_side_correction = enable_side_correction; }
+    void set_nl_kt(float nl_kt) { _nl_kt = nl_kt; }
+    void set_nl_k1(float nl_k1) { _nl_k1 = nl_k1; }
+    void set_nl_k2(float nl_k2) { _nl_k2 = nl_k2; }
+    void set_enable_bilinear(float enable_bilinear) { _enable_bilinear = enable_bilinear; }
+    void set_theta_c(float theta_c) { _theta_c = theta_c; }
+    void set_gamma_clmb(float gamma_clmb) { _gamma_clmb = gamma_clmb; }
+    void set_gamma_snk(float gamma_snk) { _gamma_snk = gamma_snk; }
+    void set_theta_clmb(float theta_clmb) { _theta_clmb = theta_clmb; }
+    void set_theta_snk(float theta_snk) { _theta_snk = theta_snk; }
+    void set_aircraft_mass(float aircraft_mass) { _aircraft_mass = aircraft_mass; }
+
+
 	// TECS status
 	uint64_t timestamp() { return _pitch_update_timestamp; }
 	ECL_TECS_MODE tecs_mode() { return _tecs_mode; }
@@ -202,6 +216,19 @@ private:
 	float _indicated_airspeed_min{3.0f};				///< equivalent airspeed demand lower limit (m/sec)
 	float _indicated_airspeed_max{30.0f};				///< equivalent airspeed demand upper limit (m/sec)
 	float _throttle_slewrate{0.0f};					///< throttle demand slew rate limit (1/sec)
+
+    // new nonlinear params
+    float _enable_side_correction{0.0f};
+    float _nl_kt{1.0f};
+    float _nl_k1{1.0f};
+    float _nl_k2{1.0f};
+    float _enable_bilinear{0.0f};
+    float _theta_c{0.0f};
+    float _gamma_clmb{1.0f};
+    float _gamma_snk{-1.0f};
+    float _theta_clmb{1.0f};
+    float _theta_snk{-1.0f};
+    float _aircraft_mass{1.0f};
 
 	// controller outputs
 	float _throttle_setpoint{0.0f};					///< normalized throttle demand (0..1)
