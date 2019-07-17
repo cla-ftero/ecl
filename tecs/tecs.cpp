@@ -219,52 +219,66 @@ void TECS::_update_speed_setpoint()
 
 }
 
-void TECS::_update_height_setpoint(float desired, float state)
+void TECS::_update_height_setpoint(float desired, float state,float manual_hgt_in, bool enable_flightpath)
 {
-	// Detect first time through and initialize previous value to demand
-	if (ISFINITE(desired) && fabsf(_hgt_setpoint_in_prev) < 0.1f) {
-		_hgt_setpoint_in_prev = desired;
-	}
+    if(enable_flightpath){
 
-	// Apply a 2 point moving average to demanded height to reduce
-	// intersampling noise effects.
-	if (ISFINITE(desired)) {
-		_hgt_setpoint = 0.5f * (desired + _hgt_setpoint_in_prev);
+        if(manual_hgt_in>0){
+            _hgt_rate_setpoint = -manual_hgt_in * _max_sink_rate;
+        }
+        else{
+            _hgt_rate_setpoint = -manual_hgt_in * _max_climb_rate;
+        }
+        _hgt_setpoint= _vert_pos_state;
+        _hgt_setpoint_in_prev= _vert_pos_state;
+        _hgt_setpoint_prev= _vert_pos_state;
+        _hgt_setpoint_adj= _vert_pos_state;
+        _hgt_setpoint_adj_prev= _vert_pos_state;
+    }else{
+        // Detect first time through and initialize previous value to demand
+        if (ISFINITE(desired) && fabsf(_hgt_setpoint_in_prev) < 0.1f) {
+            _hgt_setpoint_in_prev = desired;
+        }
 
-	} else {
-		_hgt_setpoint = _hgt_setpoint_in_prev;
-	}
+        // Apply a 2 point moving average to demanded height to reduce
+        // intersampling noise effects.
+        if (ISFINITE(desired)) {
+            _hgt_setpoint = 0.5f * (desired + _hgt_setpoint_in_prev);
 
-	_hgt_setpoint_in_prev = _hgt_setpoint;
+        } else {
+            _hgt_setpoint = _hgt_setpoint_in_prev;
+        }
 
-	// Apply a rate limit to respect vehicle performance limitations
-	if ((_hgt_setpoint - _hgt_setpoint_prev) > (_max_climb_rate * _dt)) {
-		_hgt_setpoint = _hgt_setpoint_prev + _max_climb_rate * _dt;
+        _hgt_setpoint_in_prev = _hgt_setpoint;
 
-	} else if ((_hgt_setpoint - _hgt_setpoint_prev) < (-_max_sink_rate * _dt)) {
-		_hgt_setpoint = _hgt_setpoint_prev - _max_sink_rate * _dt;
-	}
+        // Apply a rate limit to respect vehicle performance limitations
+        if ((_hgt_setpoint - _hgt_setpoint_prev) > (_max_climb_rate * _dt)) {
+            _hgt_setpoint = _hgt_setpoint_prev + _max_climb_rate * _dt;
 
-	_hgt_setpoint_prev = _hgt_setpoint;
+        } else if ((_hgt_setpoint - _hgt_setpoint_prev) < (-_max_sink_rate * _dt)) {
+            _hgt_setpoint = _hgt_setpoint_prev - _max_sink_rate * _dt;
+        }
 
-	// Apply a first order noise filter
-	_hgt_setpoint_adj = 0.1f * _hgt_setpoint + 0.9f * _hgt_setpoint_adj_prev;
+        _hgt_setpoint_prev = _hgt_setpoint;
 
-	// Calculate the demanded climb rate proportional to height error plus a feedforward term to provide
-	// tight tracking during steady climb and descent manoeuvres.
-	_hgt_rate_setpoint = (_hgt_setpoint_adj - state) * _height_error_gain + _height_setpoint_gain_ff *
-			     (_hgt_setpoint_adj - _hgt_setpoint_adj_prev) / _dt;
-	_hgt_setpoint_adj_prev = _hgt_setpoint_adj;
+        // Apply a first order noise filter
+        _hgt_setpoint_adj = 0.1f * _hgt_setpoint + 0.9f * _hgt_setpoint_adj_prev;
 
-	// Limit the rate of change of height demand to respect vehicle performance limits
-	if (_hgt_rate_setpoint > _max_climb_rate) {
-		_hgt_rate_setpoint = _max_climb_rate;
+        // Calculate the demanded climb rate proportional to height error plus a feedforward term to provide
+        // tight tracking during steady climb and descent manoeuvres.
+        _hgt_rate_setpoint = (_hgt_setpoint_adj - state) * _height_error_gain + _height_setpoint_gain_ff *
+                (_hgt_setpoint_adj - _hgt_setpoint_adj_prev) / _dt;
+        _hgt_setpoint_adj_prev = _hgt_setpoint_adj;
 
-	} else if (_hgt_rate_setpoint < -_max_sink_rate) {
-		_hgt_rate_setpoint = -_max_sink_rate;
-	}
+        // Limit the rate of change of height demand to respect vehicle performance limits
+        if (_hgt_rate_setpoint > _max_climb_rate) {
+            _hgt_rate_setpoint = _max_climb_rate;
+
+        } else if (_hgt_rate_setpoint < -_max_sink_rate) {
+            _hgt_rate_setpoint = -_max_sink_rate;
+        }
+    }
 }
-
 void TECS::_detect_underspeed()
 {
 	if (!_detect_underspeed_enabled) {
@@ -572,7 +586,7 @@ void TECS::_update_STE_rate_lim()
 
 void TECS::update_pitch_throttle(const matrix::Dcmf &rotMat, float pitch, float baro_altitude, float hgt_setpoint,
 				 float EAS_setpoint, float indicated_airspeed, float eas_to_tas, bool climb_out_setpoint, float pitch_min_climbout,
-				 float throttle_min, float throttle_max, float throttle_cruise, float pitch_limit_min, float pitch_limit_max)
+                 float throttle_min, float throttle_max, float throttle_cruise, float pitch_limit_min, float pitch_limit_max,float manual_hgt_in, bool enable_flightpath)
 {
 	// Calculate the time since last update (seconds)
 	uint64_t now = ecl_absolute_time();
@@ -609,7 +623,7 @@ void TECS::update_pitch_throttle(const matrix::Dcmf &rotMat, float pitch, float 
 	_update_speed_setpoint();
 
 	// Calculate the demanded height
-	_update_height_setpoint(hgt_setpoint, baro_altitude);
+    _update_height_setpoint(hgt_setpoint, baro_altitude, manual_hgt_in, enable_flightpath);
 
 	// Calculate the specific energy values required by the control loop
 	_update_energy_estimates();

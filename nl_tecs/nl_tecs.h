@@ -83,7 +83,7 @@ public:
 	void update_pitch_throttle(const matrix::Dcmf &rotMat, float pitch, float baro_altitude, float hgt_setpoint,
 				   float EAS_setpoint, float indicated_airspeed, float eas_to_tas, bool climb_out_setpoint, float pitch_min_climbout,
 				   float throttle_min, float throttle_setpoint_max, float throttle_cruise,
-				   float pitch_limit_min, float pitch_limit_max);
+                   float pitch_limit_min, float pitch_limit_max, float manual_hgt_in, bool enable_flightpath);
 
 	float get_throttle_setpoint(void) { return _throttle_setpoint; }
 	float get_pitch_setpoint() { return _pitch_setpoint; }
@@ -317,7 +317,7 @@ private:
 	/**
 	 * Update the desired height
 	 */
-	void _update_height_setpoint(float desired, float state);
+    void _update_height_setpoint(float desired, float state, float manual_hgt_in, bool enable_flightpath);
 
 	/**
 	 * Detect if the system is not capable of maintaining airspeed
