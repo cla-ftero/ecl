@@ -351,7 +351,7 @@ void NLTECS::_update_throttle_setpoint(const float throttle_cruise, const matrix
 
 		_last_throttle_setpoint = _throttle_setpoint;
 
-		if (airspeed_sensor_enabled()) {
+        /*if (airspeed_sensor_enabled()) {
 			// Add the integrator feedback during closed loop operation with an airspeed sensor
 			_throttle_setpoint = _throttle_setpoint;
 		} else {
@@ -363,7 +363,7 @@ void NLTECS::_update_throttle_setpoint(const float throttle_cruise, const matrix
 				// throttle is between cruise and minimum
 				_throttle_setpoint = throttle_cruise + STE_rate_setpoint / _STE_rate_min * (_throttle_setpoint_min - throttle_cruise);
 			}
-		}
+        }*/
 
 		_throttle_setpoint = constrain(_throttle_setpoint, _throttle_setpoint_min, _throttle_setpoint_max);
 	}
@@ -401,10 +401,11 @@ void NLTECS::_update_pitch_setpoint()
     // Calculate the specific energy balance and balance rate error
     float k1asdf = _nl_k1 * _nl_kt;
     float k2asdf = _nl_kt + _nl_k2 * _nl_kt;
-	_SEB_error = (_SPE_setpoint - _SPE_estimate) * k2asdf - (_SKE_setpoint + _SKE_estimate) * k1asdf;
+    _SEB_error = ((_SPE_setpoint - _SPE_estimate) * k2asdf - (_SKE_setpoint - _SKE_estimate) * k1asdf)/(2.0f*CONSTANTS_ONE_G*_tas_state);
 
 	// Calculate a specific energy correction that doesn't include the integrator contribution
 	float SEB_correction = _SEB_error + _hgt_rate_setpoint / _tas_state;
+    SEB_correction = constrain(SEB_correction,-1,1);
 	float _flightpath_setpoint_unc = asinf(SEB_correction);
 
     // Convert flight path command to pitch using a bilinear fit
