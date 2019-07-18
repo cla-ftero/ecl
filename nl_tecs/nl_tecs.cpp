@@ -405,7 +405,7 @@ void NLTECS::_update_pitch_setpoint()
 
 	// Calculate a specific energy correction that doesn't include the integrator contribution
 	float SEB_correction = _SEB_error + _hgt_rate_setpoint / _tas_state;
-    SEB_correction = constrain(SEB_correction,-1,1);
+    SEB_correction = constrain(SEB_correction,-1.0f,1.0f);
 	float _flightpath_setpoint_unc = asinf(SEB_correction);
 
     // Convert flight path command to pitch using a bilinear fit
